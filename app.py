@@ -6,18 +6,18 @@ import os
 app = Flask(__name__)
 
 #fetch API Key from ENV
-API_KEY = os.environ.get(API_KEY)
+api_key = os.environ.get('API_KEY')
 
 # Debug statement
-if API_KEY is None:
+if api_key is None:
     print("API_KEY is not set.")
 else:
-    print(f"API_KEY has been set successfully: {API_KEY}")  # Print the API key
+    print(f"API_KEY has been set successfully: {api_key}")  # Print the API key
 
 
 # Function to fetch air quality data based on bounding box input
 def fetch_air_quality_data(bbox):
-    url = f"https://api.waqi.info/map/bounds/?token={API_KEY}&latlng={bbox}"
+    url = f"https://api.waqi.info/map/bounds/?token={api_key}&latlng={bbox}"
     response = requests.get(url)
 
     if response.status_code == 200:
