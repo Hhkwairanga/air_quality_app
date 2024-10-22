@@ -7,6 +7,12 @@ app = Flask(__name__)
 # Get the API key from an environment variable
 API_KEY = os.environ.get('API_KEY')
 
+# Debug statement
+if API_KEY is None:
+    print("API_KEY is not set.")
+else:
+    print(f"API_KEY has been set successfully: {API_KEY}")  # Print the API key
+
 
 # Function to fetch air quality data based on bounding box input
 def fetch_air_quality_data(bbox):
