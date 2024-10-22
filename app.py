@@ -1,11 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 import requests
-import os
 
 app = Flask(__name__)
 
-# Get the API key from an environment variable
-API_KEY = os.environ.get('API_KEY')
+API_KEY = '706caf88b2ab838372ed5ddc960a7f2908364c1a'
 
 # Debug statement
 if API_KEY is None:
