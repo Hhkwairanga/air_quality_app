@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality Checker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Air Quality Checker</h1>
+
+        <!-- Application description -->
+        <p class="lead">
+            Welcome to the Air Quality Checker! This application allows you to select a geographical area by inputting
+            the latitude and longitude bounds, and it retrieves real-time air quality data, including temperature,
+            humidity, dew point, wind speed, and the air quality index (AQI) for cities within that region.
+        </p>
+        <p>
+            The data is fetched from the <strong>World Air Quality Index (WAQI) API</strong>, a global network that provides real-time air quality data.
+            Use the form below to input a bounding box, and you will receive the air quality information of the cities within the selected area.
+        </p>
+
+        <!-- Input form -->
+        <form id="bbox-form">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="lat_min" class="form-label">Latitude Min</label>
+                    <input type="text" class="form-control" id="lat_min" name="lat_min" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="lon_min" class="form-label">Longitude Min</label>
+                    <input type="text" class="form-control" id="lon_min" name="lon_min" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="lat_max" class="form-label">Latitude Max</label>
+                    <input type="text" class="form-control" id="lat_max" name="lat_max" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="lon_max" class="form-label">Longitude Max</label>
+                    <input type="text" class="form-control" id="lon_max" name="lon_max" required>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" id="get-data-btn" class="btn btn-primary">Get Air Quality</button>
+            </div>
+        </form>
+
+        <div class="mt-5" id="result">
+            <h3>Results</h3>
+            <table class="table table-striped" id="result-table">
+                <thead>
+                    <tr>
+                        <th>City</th>
+                        <th>Temperature</th>
+                        <th>Humidity</th>
+                        <th>Dew Point</th>
+                        <th>Wind Speed</th>
+                        <th>AQI</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Results will be injected here -->
+                </tbody>
+            </table>
+            <button id="download-btn" class="btn btn-success" style="display: none;">Download CSV</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('#bbox-form').on('submit', function(e) {
+            e.preventDefault();
+
+            // Disable the button and show the spinner
+            let getDataBtn = $('#get-data-btn');
+            getDataBtn.prop('disabled', true).html(`
+                <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+                Loading...
+            `);
+
+            $.ajax({
+                url: '/get_air_quality',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(data) {
+                    let tableBody = $('#result-table tbody');
+                    tableBody.empty();
+
+                    if (data.length > 0) {
+                        data.forEach(function(entry) {
+                            tableBody.append(`
+                                <tr>
+                                    <td>${entry.city}</td>
+                                    <td>${entry.temperature}</td>
+                                    <td>${entry.humidity}</td>
+                                    <td>${entry.dew_point}</td>
+                                    <td>${entry.wind_speed}</td>
+                                    <td>${entry.aqi}</td>
+                                    <td>${entry.time}</td>
+                                </tr>
+                            `);
+                        });
+                        $('#download-btn').show();  // Show the download button
+                    } else {
+                        tableBody.append('<tr><td colspan="7">No data available</td></tr>');
+                    }
+
+                    // Restore the button
+                    getDataBtn.prop('disabled', false).html('Get Air Quality');
+                },
+                error: function() {
+                    alert('Failed to retrieve air quality data. Please try again.');
+
+                    // Restore the button
+                    getDataBtn.prop('disabled', false).html('Get Air Quality');
+                }
+            });
+        });
+
+        // CSV download logic with double quotes for CSV safety
+        $('#download-btn').on('click', function() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `"City","Temperature","Humidity","Dew Point","Wind Speed","AQI","Time"\n`;
+
+            $('#result-table tbody tr').each(function() {
+                let row = [];
+                $(this).find('td').each(function() {
+                    let cellText = $(this).text();
+                    // Wrap each cell in double quotes to avoid CSV formatting issues
+                    row.push(`"${cellText.replace(/"/g, '""')}"`); // Escape any existing quotes
+                });
+                csvContent += row.join(",") + "\n";
+            });
+
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "air_quality_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    });
+</script>
+
+</body>
+</html>
