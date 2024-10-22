@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 
 #fetch API Key from ENV
-API_KEY = os.environ.get('API_KEY')
+API_KEY = os.environ.get(API_KEY)
 
 # Debug statement
 if API_KEY is None:
