@@ -31,7 +31,7 @@ def fetch_air_quality_data(bbox):
                 lon = entry.get("lon", "N/A")
 
                 # Fetch detailed data for each station
-                detail_url = f"https://api.waqi.info/feed/geo:{lat};{lon}/?token={API_KEY}"
+                detail_url = f"https://api.waqi.info/feed/geo:{lat};{lon}/?token={api_key}"
                 detail_response = requests.get(detail_url)
 
                 if detail_response.status_code == 200:
